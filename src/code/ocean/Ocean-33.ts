@@ -2,39 +2,13 @@
  * Based on the great Unity project https://github.com/gasgiant/FFT-Ocean by Ivan Pensionerov (https://github.com/gasgiant)
  */
 
-import * as BABYLON from '@babylonjs/core'
-import * as GUI from '@babylonjs/gui'
-import { CustomMaterial, PBRCustomMaterial, SkyMaterial } from '@babylonjs/materials';
+ import * as BABYLON from '@babylonjs/core'
+ import * as GUI from '@babylonjs/gui'
+ import { CustomMaterial, PBRCustomMaterial, SkyMaterial } from '@babylonjs/materials';
 
- async function createEngine() {
-    const webGPUSupported = await (BABYLON.WebGPUEngine as any).IsSupportedAsync;
-    if (webGPUSupported) {
-        const engine = new BABYLON.WebGPUEngine(document.getElementById("renderCanvas") as HTMLCanvasElement, {
-            deviceDescriptor: {
-                requiredFeatures: [
-                    "depth-clip-control",
-                    "depth24unorm-stencil8",
-                    "depth32float-stencil8",
-                    "texture-compression-bc",
-                    "texture-compression-etc2",
-                    "texture-compression-astc",
-                    "timestamp-query",
-                    "indirect-first-instance",
-                ],
-            },
-        });
-        await engine.initAsync();
-        return engine;
-    }
-    return new BABYLON.Engine(document.getElementById("renderCanvas") as HTMLCanvasElement, true);
-}
+ 
+ 
 
-class Playground {
-    public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
-        const oceanDemo = new Ocean();
-        return oceanDemo.createScene(engine, canvas);
-    }
-}
 
 export class Ocean {
 
@@ -2231,9 +2205,9 @@ class WavesCascade {
         });
 
         this._displacement = ComputeHelper.CreateStorageTexture("displacement", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        this._derivatives = ComputeHelper.CreateStorageTexture("derivatives", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, true);
-        this._turbulence = ComputeHelper.CreateStorageTexture("turbulence", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, true);
-        this._turbulence2 = ComputeHelper.CreateStorageTexture("turbulence", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, true);
+        this._derivatives = ComputeHelper.CreateStorageTexture("derivatives", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE/*, true*/);
+        this._turbulence = ComputeHelper.CreateStorageTexture("turbulence", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE/*, true*/);
+        this._turbulence2 = ComputeHelper.CreateStorageTexture("turbulence", this._engine, this._size, this._size, BABYLON.Constants.TEXTUREFORMAT_RGBA, BABYLON.Constants.TEXTURETYPE_HALF_FLOAT, BABYLON.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE/*, true*/);
 
         this._texturesMergerParams = new BABYLON.UniformBuffer(this._engine);
 
@@ -2288,8 +2262,8 @@ class WavesCascade {
 
         ComputeHelper.Dispatch(this._texturesMerger, this._size, this._size, 1);
 
-        this._engine.generateMipmaps(this._derivatives.getInternalTexture()!);
-        this._engine.generateMipmaps(this._pingPongTurbulence ?  this._turbulence2.getInternalTexture()! : this._turbulence.getInternalTexture()!);
+        //this._engine.generateMipmaps(this._derivatives.getInternalTexture()!);
+        //this._engine.generateMipmaps(this._pingPongTurbulence ?  this._turbulence2.getInternalTexture()! : this._turbulence.getInternalTexture()!);
     }
 
     public dispose(): void {
@@ -2581,7 +2555,7 @@ class ComputeHelper {
     private static _clearTextureComputeShader = `
         [[group(0), binding(0)]] var tbuf : texture_storage_2d<rgba32float, write>;
 
-        struct Params {
+        [[block]] struct Params {
             color : vec4<f32>;
             width : u32;
             height : u32;
@@ -2601,7 +2575,7 @@ class ComputeHelper {
         [[group(0), binding(0)]] var dest : texture_storage_2d<rgba32float, write>;
         [[group(0), binding(1)]] var src : texture_2d<f32>;
 
-        struct Params {
+        [[block]] struct Params {
             width : u32;
             height : u32;
         };
@@ -2621,7 +2595,7 @@ class ComputeHelper {
         [[group(0), binding(0)]] var dest : texture_storage_2d<rg32float, write>;
         [[group(0), binding(1)]] var src : texture_2d<f32>;
 
-        struct Params {
+        [[block]] struct Params {
             width : u32;
             height : u32;
         };
@@ -2638,14 +2612,14 @@ class ComputeHelper {
     `;
 
     private static _copyBufferTextureComputeShader = `
-        struct FloatArray {
+        [[block]] struct FloatArray {
             elements : array<f32>;
         };
 
         [[group(0), binding(0)]] var dest : texture_storage_2d<rgba32float, write>;
         [[group(0), binding(1)]] var<storage, read> src : FloatArray;
 
-        struct Params {
+        [[block]] struct Params {
             width : u32;
             height : u32;
         };
@@ -2663,14 +2637,14 @@ class ComputeHelper {
     `;
 
     private static _copyTextureBufferComputeShader = `
-        struct FloatArray {
+        [[block]] struct FloatArray {
             elements : array<f32>;
         };
 
         [[group(0), binding(0)]] var src : texture_2d<f32>;
         [[group(0), binding(1)]] var<storage, write> dest : FloatArray;
 
-        struct Params {
+        [[block]] struct Params {
             width : u32;
             height : u32;
         };
@@ -3976,7 +3950,7 @@ let PI : f32 = 3.1415926;
 [[group(0), binding(2)]] var H0K : texture_storage_2d<rg32float, write>;
 [[group(0), binding(4)]] var Noise : texture_2d<f32>;
 
-struct Params {
+[[block]] struct Params {
     Size : u32;
     LengthScale : f32;
     CutoffHigh : f32;
@@ -3998,7 +3972,7 @@ struct SpectrumParameter {
 	shortWavesFade : f32;
 };
 
-struct SpectrumParameters {
+[[block]] struct SpectrumParameters {
     elements : array<SpectrumParameter>;
 };
 
@@ -4113,7 +4087,7 @@ fn calculateInitialSpectrum([[builtin(global_invocation_id)]] id : vec3<u32>)
 const initialSpectrum2CS = `
 [[group(0), binding(0)]] var H0 : texture_storage_2d<rgba32float, write>;
 
-struct Params {
+[[block]] struct Params {
     Size : u32;
     LengthScale : f32;
     CutoffHigh : f32;
@@ -4141,7 +4115,7 @@ let PI: f32 = 3.1415926;
 
 [[group(0), binding(0)]] var PrecomputeBuffer : texture_storage_2d<rgba32float, write>;
 
-struct Params {
+[[block]] struct Params {
     Step : i32;
     Size : i32;
 };
@@ -4173,7 +4147,7 @@ fn precomputeTwiddleFactorsAndInputIndices([[builtin(global_invocation_id)]] id 
 `
 
 const fftInverseFFTCS = `
-struct Params {
+[[block]] struct Params {
     Step : i32;
     Size : i32;
 };
@@ -4207,7 +4181,7 @@ fn horizontalStepInverseFFT([[builtin(global_invocation_id)]] id : vec3<u32>)
 `
 
 const fftInverseFFT2CS = `
-struct Params {
+[[block]] struct Params {
     Step : i32;
     Size : i32;
 };
@@ -4258,7 +4232,7 @@ const timeDependentSpectrumCS = `
 [[group(0), binding(1)]] var H0 : texture_2d<f32>;
 [[group(0), binding(3)]] var WavesData : texture_2d<f32>;
 
-struct Params {
+[[block]] struct Params {
     Time : f32;
 };
 
@@ -4304,7 +4278,7 @@ fn calculateAmplitudes([[builtin(global_invocation_id)]] id : vec3<u32>)
 `
 
 const wavesTexturesMergerCS = `
-struct Params {
+[[block]] struct Params {
     Lambda : f32;
     DeltaTime : f32;
 };

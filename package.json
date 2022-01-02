@@ -3,8 +3,10 @@
   "private": true,
   "version": "0.0.1",
   "license": "MIT",
+  "main": "src/desktop/main.js",
   "scripts": {
-    "start": "node ./start"
+    "start": "node ./start",
+    "start:electron": "node ./start --use-electron"
   },
   "prettier": {
     "printWidth": 120,
@@ -24,5 +26,9 @@
     "esbuild": "0.14.10",
     "servor": "4.0.2",
     "typescript": "4.5.4"
+  },
+  "electronDependencies": {
+    "//": "add the following deps to devDependencies if you want to use electron",
+    "electron": "16.0.5"
   }
 }
