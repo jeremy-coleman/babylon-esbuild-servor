@@ -1,0 +1,28 @@
+{
+  "name": "gg",
+  "private": true,
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./start"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "arrowParens": "always",
+    "quoteProps": "consistent"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^5.0.0-alpha",
+    "@babylonjs/gui": "^5.0.0-alpha",
+    "@babylonjs/inspector": "^5.0.0-alpha",
+    "@babylonjs/loaders": "^5.0.0-alpha",
+    "@babylonjs/materials": "^5.0.0-alpha"
+  },
+  "devDependencies": {
+    "ansi-diff-stream": "1.2.1",
+    "esbuild": "0.14.10",
+    "servor": "4.0.2",
+    "typescript": "4.5.4"
+  }
+}
